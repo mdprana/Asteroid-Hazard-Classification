@@ -88,7 +88,7 @@ Pertama, mari melihat distribusi kelas target (pha - potentially hazardous aster
 
 ![Grafik batang distribusi Asteroid Berbahaya vs Tidak Berbahaya](https://github.com/user-attachments/assets/1168bdbd-bc00-4d61-8590-9f64a8607da7)
 
-Dari visualisasi di atas, terlihat bahwa kelas target sangat tidak seimbang. Asteroid yang diklasifikasikan sebagai berbahaya (Y) jauh lebih sedikit (sekitar 2.066 atau 0.22%) dibandingkan dengan yang tidak berbahaya (N) (sekitar 936.537 atau 97.8%). Hal ini mencerminkan kenyataan di alam semesta, dimana asteroid berbahaya memang relatif jarang. Ketidakseimbangan kelas ini akan menjadi tantangan dalam pemodelan dan perlu ditangani dengan teknik khusus.
+Dari data di atas, terlihat bahwa kelas target sangat tidak seimbang. Asteroid yang diklasifikasikan sebagai berbahaya (Y) jauh lebih sedikit (sekitar 2.066 atau 0.22%) dibandingkan dengan yang tidak berbahaya (N) (sekitar 936.537 atau 97.8%). Terdapat juga 19.921 data dengan nilai yang hilang (NaN). Ketidakseimbangan kelas ini mencerminkan kenyataan di alam semesta, dimana asteroid berbahaya memang relatif jarang, dan akan menjadi tantangan dalam pemodelan yang perlu ditangani dengan teknik khusus.
 
 #### Analisis Fitur Numerik
 Berikut adalah distribusi beberapa fitur numerik penting dalam dataset:
@@ -185,7 +185,7 @@ df_clean['neo'] = df_clean['neo'].map({'Y': 1, 'N': 0, np.nan: 0})  # Menganggap
 
 ### 4. Feature Scaling
 
-Karena fitur-fitur memiliki skala yang berbeda, saya melakukan normalisasi fitur menggunakan StandardScaler:
+Karena fitur-fitur memiliki skala yang berbeda, kita melakukan normalisasi fitur menggunakan StandardScaler:
 
 ```bash
 # Memisahkan fitur dan target
@@ -201,7 +201,7 @@ Feature scaling penting untuk algoritma seperti Logistic Regression yang sensiti
 
 ### 5. Pembagian Dataset
 
-Saya membagi dataset menjadi set training dan testing:
+Kita membagi dataset menjadi set training dan testing:
 
 ```bash
 # Membagi data menjadi training dan testing set (80:20)
@@ -214,7 +214,7 @@ Penggunaan parameter `stratify=y` memastikan bahwa proporsi kelas dalam data tra
 
 ### 6. Penanganan Ketidakseimbangan Kelas
 
-Untuk mengatasi ketidakseimbangan kelas yang signifikan, saya menggunakan teknik SMOTE (Synthetic Minority Over-sampling Technique):
+Untuk mengatasi ketidakseimbangan kelas yang signifikan, kita menggunakan teknik SMOTE (Synthetic Minority Over-sampling Technique):
 
 ```bash
 # Terapkan SMOTE hanya pada data training
@@ -226,7 +226,7 @@ print("Distribusi kelas pada data training setelah resampling:")
 print(Counter(y_train_resampled))
 ```
 
-SMOTE menciptakan sampel sintetis dari kelas minoritas (asteroid berbahaya) berdasarkan k-nearest neighbors. Hal ini membantu model untuk lebih baik dalam mempelajari pola kelas minoritas tanpa overfitting pada sampel yang ada.
+SMOTE menciptakan sampel sintetis dari kelas minoritas (asteroid berbahaya) berdasarkan k-nearest neighbors. Setelah menerapkan SMOTE, jumlah asteroid berbahaya (kelas 1) menjadi seimbang dengan asteroid tidak berbahaya (749.229 untuk masing-masing kelas). Hal ini membantu model untuk lebih baik dalam mempelajari pola kelas minoritas tanpa overfitting pada sampel yang ada.
 
 ## Modeling
 ---
@@ -283,6 +283,21 @@ y_pred_rf = rf.predict(X_test)
 - Lebih kompleks dan komputasional lebih berat dibanding Logistic Regression
 - Kurang interpretable dibanding model yang lebih sederhana
 - Performanya dapat menurun jika terlalu banyak trees (overfitting)
+
+Hasil evaluasi model Random Forest:
+```
+Random Forest - Accuracy: 0.999914767127812
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00    187308
+           1       0.97      0.99      0.98       413
+
+    accuracy                           1.00    187721
+   macro avg       0.99      1.00      0.99    187721
+weighted avg       1.00      1.00      1.00    187721
+```
 
 ### 3. XGBoost
 
@@ -428,12 +443,12 @@ Confusion matrix memberikan gambaran lebih detail tentang performa model:
 ![Confusion Matrix model terbaik](https://github.com/user-attachments/assets/e1625e22-979d-443c-8595-3c20b624f73b)
 
 Dari confusion matrix di atas, kita dapat melihat:
-- **True Negatives (TN)**: 413 asteroid tidak berbahaya yang diprediksi dengan benar
-- **False Positives (FP)**: 1 asteroid tidak berbahaya yang salah diprediksi sebagai berbahaya
-- **False Negatives (FN)**: 2 asteroid berbahaya yang salah diprediksi sebagai tidak berbahaya
-- **True Positives (TP)**: 19 asteroid berbahaya yang diprediksi dengan benar
+- **True Negatives (TN)**: 1874297 asteroid tidak berbahaya yang diprediksi dengan benar
+- **False Positives (FP)**: 12 asteroid tidak berbahaya yang salah diprediksi sebagai berbahaya
+- **False Negatives (FN)**: 4 asteroid berbahaya yang salah diprediksi sebagai tidak berbahaya
+- **True Positives (TP)**: 409 asteroid berbahaya yang diprediksi dengan benar
 
-Jumlah false negatives (2) relatif rendah, yang menunjukkan bahwa model jarang melewatkan asteroid berbahaya - aspek yang sangat penting untuk keamanan planet.
+Jumlah false negatives (4) relatif rendah, yang menunjukkan bahwa model jarang melewatkan asteroid berbahaya - aspek yang sangat penting untuk keamanan planet.
 
 ### Feature Importance
 
@@ -470,20 +485,22 @@ Dari contoh di atas, asteroid dengan kombinasi diameter besar dan MOID rendah (A
 
 Berdasarkan hasil pemodelan dan evaluasi yang telah dilakukan, dapat disimpulkan:
 
-1. **Model Random Forest** memberikan performa terbaik dalam klasifikasi asteroid berbahaya dengan akurasi 99.23%, precision 95.00%, recall 90.48%, dan F1-Score 92.68%. Model ini menyeimbangkan kemampuan untuk mengidentifikasi asteroid berbahaya (recall tinggi) dan menghindari false alarm (precision tinggi).
+1. **Model Random Forest** memberikan performa terbaik dalam klasifikasi asteroid berbahaya dengan akurasi 99.99%, precision 97.15%, recall 99.03%, dan F1-Score 98.08%. Model ini menyeimbangkan kemampuan untuk mengidentifikasi asteroid berbahaya (recall tinggi) dan menghindari false alarm (precision tinggi).
 
 2. **Fitur-fitur terpenting** dalam menentukan status bahaya asteroid adalah:
-   - Kedekatan orbit asteroid dengan Bumi (MOID dan earth_approach)
-   - Ukuran asteroid (diameter)
-   - Kombinasi dari kedua faktor di atas (size_danger)
+   - Status asteroid sebagai Near Earth Object (neo)
+   - Velocity ratio (rasio eksentrisitas terhadap jarak perihelion)
+   - Eksentrisitas orbit (e)
+   - Earth approach (transformasi dari MOID)
+   - Jarak perihelion (q)
    
-   Hal ini sesuai dengan kriteria yang digunakan NASA untuk mengklasifikasikan Potentially Hazardous Asteroids (PHAs).
+   Hal ini menunjukkan bahwa karakteristik orbit asteroid, terutama yang berkaitan dengan kedekatan ke Bumi, adalah faktor utama dalam menentukan potensi bahayanya.
 
 3. **Feature Engineering** terbukti sangat efektif dalam meningkatkan performa model. Fitur turunan seperti earth_approach dan size_danger menjadi prediktor terkuat dalam model, menunjukkan pentingnya pengetahuan domain dalam pengembangan model machine learning.
 
 4. **Penanganan ketidakseimbangan kelas** menggunakan SMOTE terbukti efektif dalam meningkatkan performa model pada kelas minoritas (asteroid berbahaya). Tanpa SMOTE, model cenderung mengoptimalkan prediksi pada kelas mayoritas dan mengabaikan kelas minoritas yang justru lebih penting dalam konteks ini.
 
-5. **Hyperparameter tuning** berhasil meningkatkan performa model Random Forest. Konfigurasi optimal dengan n_estimators=200, max_depth=30, dan min_samples_split=2 menghasilkan model yang dapat menyeimbangkan kompleksitas dan generalisasi.
+5. **Hyperparameter tuning** berhasil meningkatkan performa model Random Forest. Konfigurasi optimal dengan n_estimators=100, max_depth=None, dan min_samples_split=2 menghasilkan model dengan F1-score 0.9999 pada cross-validation dan performa tinggi pada data testing.
 
 ### Rekomendasi
 
