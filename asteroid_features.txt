@@ -1,0 +1,13 @@
+H
+diameter
+albedo
+e
+a
+q
+i
+moid
+moid_ld
+neo
+velocity_ratio
+size_danger
+earth_approach
