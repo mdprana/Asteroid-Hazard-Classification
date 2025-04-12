@@ -117,7 +117,7 @@ Y        2066
 Name: count, dtype: int64
 ```
 
-![Grafik batang distribusi Asteroid Berbahaya vs Tidak Berbahaya](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431950954-1168bdbd-bc00-4d61-8590-9f64a8607da7.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052403Z&X-Amz-Expires=300&X-Amz-Signature=6f2a2a24a13ffc43f15ee7c9927a75df0e8273473ce9a9aa73d696b780a94bd3&X-Amz-SignedHeaders=host)
+![Grafik batang distribusi Asteroid Berbahaya vs Tidak Berbahaya](https://i.ibb.co.com/n8bJ3wnV/433015895-db6cff88-a909-4dca-b7d0-cb7dc0e3a940.png)
 
 Dari data di atas, terlihat bahwa kelas target sangat tidak seimbang. Asteroid yang diklasifikasikan sebagai berbahaya (Y) jauh lebih sedikit (sekitar 2.066 atau 0.22%) dibandingkan dengan yang tidak berbahaya (N) (sekitar 936.537 atau 97.8%). Terdapat juga 19.921 data dengan nilai yang hilang (NaN). Ketidakseimbangan kelas ini mencerminkan kenyataan di alam semesta, dimana asteroid berbahaya memang relatif jarang, dan akan menjadi tantangan dalam pemodelan yang perlu ditangani dengan teknik khusus.
 
@@ -172,7 +172,7 @@ max           1.000000
 Name: albedo, dtype: float64
 ```
 
-![Grid visualisasi histogram fitur-fitur numerik](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431951670-7b64eb81-bf7f-4d74-9b95-1b3ee5b6563d.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052439Z&X-Amz-Expires=300&X-Amz-Signature=ce3846198a7168df284d86883e783d5f70499f4f4140d6e1730f27d6af7a2319&X-Amz-SignedHeaders=host)
+![Grid visualisasi histogram fitur-fitur numerik](https://i.ibb.co.com/ZzRGKqd1/433016080-8fb3858a-5302-4dd4-917f-8e1808dc1b00.png)
 
 Dari visualisasi dan statistik deskriptif di atas, kita dapat melihat perbedaan pola distribusi antara asteroid berbahaya dan tidak berbahaya. Beberapa insight penting:
 
@@ -183,7 +183,7 @@ Dari visualisasi dan statistik deskriptif di atas, kita dapat melihat perbedaan 
 #### Analisis Korelasi
 Untuk memahami hubungan antar fitur dan target, saya melakukan analisis korelasi:
 
-![Heatmap korelasi antar fitur](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431951802-cdbd02b4-3795-4c55-b71a-2a29af1c2089.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052500Z&X-Amz-Expires=300&X-Amz-Signature=4c5d1ca372622d597168d4f5e93d277e4f4fb22301c1aa7baa1c26e9a8ee63dd&X-Amz-SignedHeaders=host)
+![Heatmap korelasi antar fitur](https://i.ibb.co.com/jvSHZ1F4/433016147-167c7a6d-5993-4f05-8ff0-f6a2017bbb5a.png)
 
 Dari heatmap korelasi di atas, beberapa insight penting:
 
@@ -214,7 +214,7 @@ q                -0.035622
 Name: pha, dtype: float64
 ```
 
-![Bar chart fitur dengan korelasi tertinggi](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431951965-f6e0a62d-0dd0-4681-bfe4-ce96ee386131.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052519Z&X-Amz-Expires=300&X-Amz-Signature=69a2172a58c196b734329f6ccca4b2a89c3b0e27c251848c6d45d9a7c6300bb6&X-Amz-SignedHeaders=host)
+![Bar chart fitur dengan korelasi tertinggi](https://i.ibb.co.com/M53fF9bZ/433016225-fb1e5fd5-ea57-47d3-9fc4-7b4dc7a127f0.png)
 
 Dari analisis korelasi di atas, fitur-fitur yang memiliki korelasi tertinggi dengan status bahaya asteroid adalah:
 1. neo (Near Earth Object): 0.297044
@@ -443,7 +443,7 @@ y_pred_xgb = xgb.predict(X_test)
 
 Analisis feature importance dari model Random Forest memberikan insight tentang fitur yang paling berpengaruh dalam klasifikasi asteroid berbahaya:
 
-![Bar chart feature importance dari Random Forest](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431952278-9d0b2842-2d08-4b1e-95ee-74db94bb301e.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052618Z&X-Amz-Expires=300&X-Amz-Signature=e366bd5d17a19b122dc9cae7a06d15306cafcaa4b4deee1cbb9bbd4f4e46cc65&X-Amz-SignedHeaders=host)
+![Bar chart feature importance dari Random Forest](https://i.ibb.co.com/F4NjG2bk/433016886-582d7a17-081c-4c58-a6e1-cc26069fbd41.png)
 
 ### Hyperparameter Tuning
 
@@ -545,7 +545,7 @@ Berikut adalah perbandingan performa ketiga model klasifikasi pada data testing:
 | XGBoost             | 0.999819 | 0.935632  | 0.985472| 0.959906 | 0.999986|
 | Logistic Regression | 0.994652 | 0.291461  | 1.000000| 0.451366 | 0.999486|
 
-![ROC Curve perbandingan ketiga model](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431952433-bc35cfae-5949-4d85-9e56-d3a1bb9bf7a7.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052602Z&X-Amz-Expires=300&X-Amz-Signature=ebe3ab8624ebbab301e5b7d38f89e4dff6f5c05e14d4acb8260b773082c807c7&X-Amz-SignedHeaders=host)
+![ROC Curve perbandingan ketiga model](https://i.ibb.co.com/8L24fMq0/433017052-2e4b1610-e0a1-449f-a26b-7f0cc9fbfb7f.png)
 
 Dari tabel dan grafik perbandingan di atas, dapat dianalisis:
 
@@ -582,7 +582,7 @@ AUC: 1.0000
 
 #### Confusion Matrix
 
-![Confusion Matrix model terbaik](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431952824-e1625e22-979d-443c-8595-3c20b624f73b.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052733Z&X-Amz-Expires=300&X-Amz-Signature=75132fd55a5dbe6ad8ea8c37327f13e7e8fa7d5427de08d90ea113f3ff0dae38&X-Amz-SignedHeaders=host)
+![Confusion Matrix model terbaik](https://i.ibb.co.com/jZW8TGcM/433017183-f335c57b-4d27-47c4-bbfa-916c7a42e55b.png)
 
 Dari confusion matrix di atas, dapat dilihat:
 - **True Negatives (TN)**: 187.298 asteroid tidak berbahaya yang diprediksi dengan benar
@@ -598,7 +598,7 @@ Yang paling penting, jumlah false negatives sangat kecil (hanya 4 asteroid berba
 
 Analisis feature importance dari model Random Forest memberikan wawasan berharga tentang faktor-faktor yang mempengaruhi klasifikasi asteroid berbahaya:
 
-![Feature Importance dari Random Forest](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/433013225-9c84cff7-f016-44cf-960f-bcf61cb4407d.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T055642Z&X-Amz-Expires=300&X-Amz-Signature=e6bbad38ea09455a85f40f92001632e7a4352f29277545dd43b03c87e5e521cd&X-Amz-SignedHeaders=host)
+![Feature Importance dari Random Forest](https://i.ibb.co.com/4wvM3HLY/433017233-77d18789-e7cf-485e-b5c8-722b7eca72d6.png)
 
 Berdasarkan hasil analisis feature importance, dapat diidentifikasi lima fitur terpenting dalam menentukan status bahaya asteroid:
 
@@ -616,7 +616,7 @@ Analisis ini mengkonfirmasi bahwa status sebagai objek dekat Bumi, kecepatan rel
 
 #### ROC Curve
 
-![ROC Curve model terbaik](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431952658-c95ec5dc-ea68-4bac-8e07-53521df2faf3.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052723Z&X-Amz-Expires=300&X-Amz-Signature=d56ca636679c28530e9ef701c619db345d1911a6650c8fa3905de2becdb88b47&X-Amz-SignedHeaders=host)
+![ROC Curve model terbaik](https://i.ibb.co.com/hR5PYHB7/433017281-5f8dd1d3-892c-4ec1-bf88-8868584c6226.png)
 
 ROC Curve menunjukkan trade-off antara True Positive Rate (Recall) dan False Positive Rate pada berbagai threshold. Kurva yang mendekati sudut kiri atas (seperti yang ditunjukkan model Random Forest dengan AUC 1.0000) menunjukkan model yang hampir sempurna dalam membedakan antara asteroid berbahaya dan tidak berbahaya.
 
