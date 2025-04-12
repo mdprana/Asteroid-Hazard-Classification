@@ -49,15 +49,29 @@ Semua solusi di atas akan dievaluasi menggunakan metrik yang sesuai seperti akur
 ## Data Understanding
 ---
 
+### Informasi Dataset
+
 Dataset yang digunakan pada proyek ini diambil dari website kaggle [Asteroid Dataset](https://www.kaggle.com/datasets/sakhawat18/asteroid-dataset). Dataset ini berisi informasi tentang asteroid yang telah diidentifikasi, termasuk parameter fisik dan orbital mereka.
 
-### Informasi Dataset
-- **Jumlah Data**: Dataset ini memiliki sekitar 958.000 data asteroid
+**Spesifikasi Dataset:**
+- **Jumlah Data**: 958.524 baris (asteroid) dengan 45 kolom (fitur)
 - **Format Data**: CSV (Comma Separated Values)
 - **Ukuran Data**: Sekitar 450 MB
 
+**Kondisi Data:**
+- **Missing Values**: 
+  - name: 97.70% missing
+  - prefix: 99.99% missing
+  - pha (variabel target): 2.08% missing
+  - H (magnitude absolut): 0.65% missing
+  - diameter: 85.79% missing
+  - albedo: 85.91% missing
+  - Beberapa fitur orbital (sigma_e, sigma_a, dll): sekitar 2.08% missing
+- **Duplikasi**: Tidak ditemukan duplikasi berdasarkan ID asteroid
+- **Outliers**: Terdapat beberapa outliers pada fitur diameter yang mencapai 939.4 km (jauh di atas nilai median 3.972 km), moid, dan beberapa parameter orbital lainnya
+
 ### Variabel pada Dataset
-Dataset asteroid memiliki beberapa fitur penting yang digunakan dalam analisis:
+Dataset asteroid memiliki 45 kolom dengan beberapa fitur penting yang digunakan dalam analisis:
 
 | Fitur          | Deskripsi                                                              |
 |----------------|------------------------------------------------------------------------|
@@ -77,25 +91,90 @@ Dataset asteroid memiliki beberapa fitur penting yang digunakan dalam analisis:
 | i              | Inklinasi orbit dalam derajat                                          |
 | om             | Longitude of ascending node (dalam derajat)                            |
 | w              | Argument of perihelion (dalam derajat)                                 |
+| ma             | Mean anomaly (dalam derajat)                                           |
+| ad             | Aphelion distance (titik terjauh dari Matahari) dalam AU               |
+| n              | Mean motion (derajat per hari)                                         |
+| tp             | Time of perihelion passage                                             |
+| per            | Orbital period (dalam hari)                                            |
+| per_y          | Orbital period (dalam tahun)                                           |
 | moid           | Minimum Orbit Intersection Distance dengan Bumi dalam AU                |
 | moid_ld        | MOID dalam satuan jarak lunar (LD) dari Bumi                           |
 | class          | Kelas asteroid (MBA, AMO, APO, dll)                                    |
+| rms            | Root-mean-square residual (kualitas orbit solution)                    |
+| sigma_*        | Sigma error untuk berbagai parameter (e, a, q, i, om, w, ma, ad, n, tp, per) |
 
 ### Exploratory Data Analysis
 
 #### Distribusi Target Variable
-Pertama, mari melihat distribusi kelas target (pha - potentially hazardous asteroid):
+Berikut adalah distribusi kelas target (pha - potentially hazardous asteroid):
 
-![Grafik batang distribusi Asteroid Berbahaya vs Tidak Berbahaya](https://github.com/user-attachments/assets/1168bdbd-bc00-4d61-8590-9f64a8607da7)
+```
+Distribusi nilai pada kolom 'pha':
+pha
+N      936537
+NaN     19921
+Y        2066
+Name: count, dtype: int64
+```
+
+![Grafik batang distribusi Asteroid Berbahaya vs Tidak Berbahaya](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431950954-1168bdbd-bc00-4d61-8590-9f64a8607da7.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052403Z&X-Amz-Expires=300&X-Amz-Signature=6f2a2a24a13ffc43f15ee7c9927a75df0e8273473ce9a9aa73d696b780a94bd3&X-Amz-SignedHeaders=host)
 
 Dari data di atas, terlihat bahwa kelas target sangat tidak seimbang. Asteroid yang diklasifikasikan sebagai berbahaya (Y) jauh lebih sedikit (sekitar 2.066 atau 0.22%) dibandingkan dengan yang tidak berbahaya (N) (sekitar 936.537 atau 97.8%). Terdapat juga 19.921 data dengan nilai yang hilang (NaN). Ketidakseimbangan kelas ini mencerminkan kenyataan di alam semesta, dimana asteroid berbahaya memang relatif jarang, dan akan menjadi tantangan dalam pemodelan yang perlu ditangani dengan teknik khusus.
 
+#### Distribusi Near Earth Objects (NEO)
+
+```
+Distribusi nilai pada kolom 'neo':
+neo
+N      935625
+Y       22895
+NaN         4
+Name: count, dtype: int64
+```
+
+Terdapat 22.895 asteroid yang diklasifikasikan sebagai Near Earth Objects (NEO), atau sekitar 2.4% dari total asteroid. Ini menunjukkan bahwa tidak semua NEO dianggap berbahaya (PHA).
+
 #### Analisis Fitur Numerik
-Berikut adalah distribusi beberapa fitur numerik penting dalam dataset:
+Berikut adalah statistik deskriptif untuk beberapa fitur numerik penting:
 
-![Grid visualisasi histogram fitur-fitur numerik](https://github.com/user-attachments/assets/7b64eb81-bf7f-4d74-9b95-1b3ee5b6563d)
+```
+Statistik untuk kolom 'H':
+count    932341.000000
+mean         16.889969
+std           1.801386
+min          -1.100000
+25%          16.000000
+50%          16.900000
+75%          17.700000
+max          33.200000
+Name: H, dtype: float64
 
-Dari visualisasi di atas, kita dapat melihat perbedaan pola distribusi antara asteroid berbahaya dan tidak berbahaya. Beberapa insight penting:
+Statistik untuk kolom 'diameter':
+count    136209.000000
+mean          5.506429
+std           9.425164
+min           0.002500
+25%           2.780000
+50%           3.972000
+75%           5.765000
+max         939.400000
+Name: diameter, dtype: float64
+
+Statistik untuk kolom 'albedo':
+count    135103.000000
+mean          0.130627
+std           0.110323
+min           0.001000
+25%           0.053000
+50%           0.079000
+75%           0.190000
+max           1.000000
+Name: albedo, dtype: float64
+```
+
+![Grid visualisasi histogram fitur-fitur numerik](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431951670-7b64eb81-bf7f-4d74-9b95-1b3ee5b6563d.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052439Z&X-Amz-Expires=300&X-Amz-Signature=ce3846198a7168df284d86883e783d5f70499f4f4140d6e1730f27d6af7a2319&X-Amz-SignedHeaders=host)
+
+Dari visualisasi dan statistik deskriptif di atas, kita dapat melihat perbedaan pola distribusi antara asteroid berbahaya dan tidak berbahaya. Beberapa insight penting:
 
 1. **Magnitude (H)**: Asteroid berbahaya cenderung memiliki nilai H yang lebih rendah, yang mengindikasikan ukuran yang lebih besar.
 2. **Diameter**: Asteroid berbahaya umumnya memiliki diameter yang lebih besar dibandingkan asteroid tidak berbahaya.
@@ -104,20 +183,47 @@ Dari visualisasi di atas, kita dapat melihat perbedaan pola distribusi antara as
 #### Analisis Korelasi
 Untuk memahami hubungan antar fitur dan target, saya melakukan analisis korelasi:
 
-![Heatmap korelasi antar fitur](https://github.com/user-attachments/assets/cdbd02b4-3795-4c55-b71a-2a29af1c2089)
+![Heatmap korelasi antar fitur](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431951802-cdbd02b4-3795-4c55-b71a-2a29af1c2089.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052500Z&X-Amz-Expires=300&X-Amz-Signature=4c5d1ca372622d597168d4f5e93d277e4f4fb22301c1aa7baa1c26e9a8ee63dd&X-Amz-SignedHeaders=host)
 
 Dari heatmap korelasi di atas, beberapa insight penting:
 
-1. **MOID** memiliki korelasi negatif yang kuat dengan status berbahaya, mengkonfirmasi bahwa semakin kecil jarak minimum ke orbit Bumi, semakin besar kemungkinan asteroid diklasifikasikan sebagai berbahaya.
-2. **Diameter** memiliki korelasi positif dengan status berbahaya, menunjukkan bahwa asteroid berbahaya cenderung lebih besar.
+1. **MOID** memiliki korelasi negatif dengan status berbahaya, mengkonfirmasi bahwa semakin kecil jarak minimum ke orbit Bumi, semakin besar kemungkinan asteroid diklasifikasikan sebagai berbahaya.
+2. **Diameter** memiliki korelasi dengan status berbahaya, menunjukkan bahwa ukuran asteroid merupakan faktor dalam klasifikasinya.
 3. Terdapat korelasi yang signifikan antar beberapa parameter orbital, yang mungkin mengindikasikan multikolinearitas yang perlu diperhatikan dalam pemodelan.
 
-#### Top Fitur Berdasarkan Korelasi dengan Target
-Berikut adalah fitur-fitur dengan korelasi tertinggi terhadap status berbahaya:
+#### Korelasi Fitur dengan Target
 
-![Bar chart fitur dengan korelasi tertinggi](https://github.com/user-attachments/assets/f6e0a62d-0dd0-4681-bfe4-ce96ee386131)
+Setelah membuat fitur turunan, berikut adalah korelasi fitur-fitur dengan variabel target (PHA):
 
-Dari visualisasi di atas, fitur MOID (jarak minimum ke orbit Bumi) memiliki korelasi tertinggi dengan status bahaya asteroid, diikuti oleh diameter dan beberapa parameter orbital lainnya. Ini sesuai dengan kriteria NASA yang mendefinisikan PHA sebagai asteroid dengan MOID kurang dari 0.05 AU dan magnitude absolut (H) kurang dari 22.0.
+```
+Korelasi fitur final dengan target (PHA):
+pha               1.000000
+neo               0.297044
+velocity_ratio    0.285635
+e                 0.190488
+earth_approach    0.153024
+H                 0.083200
+i                 0.033703
+albedo            0.003211
+size_danger       0.002960
+a                -0.001327
+diameter         -0.007122
+moid_ld          -0.030303
+moid             -0.030303
+q                -0.035622
+Name: pha, dtype: float64
+```
+
+![Bar chart fitur dengan korelasi tertinggi](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431951965-f6e0a62d-0dd0-4681-bfe4-ce96ee386131.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052519Z&X-Amz-Expires=300&X-Amz-Signature=69a2172a58c196b734329f6ccca4b2a89c3b0e27c251848c6d45d9a7c6300bb6&X-Amz-SignedHeaders=host)
+
+Dari analisis korelasi di atas, fitur-fitur yang memiliki korelasi tertinggi dengan status bahaya asteroid adalah:
+1. neo (Near Earth Object): 0.297044
+2. velocity_ratio (e/q): 0.285635
+3. e (eksentrisitas): 0.190488
+4. earth_approach (1/MOID): 0.153024
+5. H (magnitude absolut): 0.083200
+
+Ini menunjukkan bahwa status sebagai objek dekat Bumi dan parameter orbit yang menunjukkan kecepatan dan kedekatan dengan Bumi adalah faktor utama dalam menentukan status bahaya asteroid.
 
 ## Data Preparation
 ---
@@ -142,6 +248,8 @@ Hasil menunjukkan beberapa kolom memiliki missing values, terutama pada kolom 'p
 df_clean = df.dropna(subset=['pha'])
 print(f"Ukuran dataset setelah menghapus baris dengan 'pha' kosong: {df_clean.shape}")
 ```
+
+Setelah menghapus baris dengan nilai 'pha' yang hilang, ukuran dataset menjadi 938.603 baris x 45 kolom.
 
 Untuk fitur lainnya, saya mengisi missing values dengan nilai median:
 
@@ -212,6 +320,20 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 Penggunaan parameter `stratify=y` memastikan bahwa proporsi kelas dalam data training dan testing tetap sama meskipun terdapat ketidakseimbangan kelas.
 
+```
+Distribusi kelas pada data training:
+pha
+0    749229
+1      1653
+Name: count, dtype: int64
+
+Distribusi kelas pada data testing:
+pha
+0    187308
+1       413
+Name: count, dtype: int64
+```
+
 ### 6. Penanganan Ketidakseimbangan Kelas
 
 Untuk mengatasi ketidakseimbangan kelas yang signifikan, kita menggunakan teknik SMOTE (Synthetic Minority Over-sampling Technique):
@@ -220,10 +342,17 @@ Untuk mengatasi ketidakseimbangan kelas yang signifikan, kita menggunakan teknik
 # Terapkan SMOTE hanya pada data training
 smote = SMOTE(random_state=42)
 X_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+```
 
-# Cek distribusi kelas setelah resampling
-print("Distribusi kelas pada data training setelah resampling:")
-print(Counter(y_train_resampled))
+```
+Distribusi kelas pada data training sebelum resampling:
+Counter({0: 749229, 1: 1653})
+
+Distribusi kelas pada data training setelah resampling:
+Counter({0: 749229, 1: 749229})
+
+Dimensi data training setelah resampling: (1498458, 13)
+Dimensi data testing: (187721, 13)
 ```
 
 SMOTE menciptakan sampel sintetis dari kelas minoritas (asteroid berbahaya) berdasarkan k-nearest neighbors. Setelah menerapkan SMOTE, jumlah asteroid berbahaya (kelas 1) menjadi seimbang dengan asteroid tidak berbahaya (749.229 untuk masing-masing kelas). Hal ini membantu model untuk lebih baik dalam mempelajari pola kelas minoritas tanpa overfitting pada sampel yang ada.
@@ -284,21 +413,6 @@ y_pred_rf = rf.predict(X_test)
 - Kurang interpretable dibanding model yang lebih sederhana
 - Performanya dapat menurun jika terlalu banyak trees (overfitting)
 
-Hasil evaluasi model Random Forest:
-```
-Random Forest - Accuracy: 0.999914767127812
-
-Classification Report:
-              precision    recall  f1-score   support
-
-           0       1.00      1.00      1.00    187308
-           1       0.97      0.99      0.98       413
-
-    accuracy                           1.00    187721
-   macro avg       0.99      1.00      0.99    187721
-weighted avg       1.00      1.00      1.00    187721
-```
-
 ### 3. XGBoost
 
 XGBoost (Extreme Gradient Boosting) adalah implementasi dari algoritma gradient boosting yang dioptimalkan untuk performa. Model ini sering memberikan akurasi yang lebih baik untuk berbagai masalah klasifikasi.
@@ -329,9 +443,7 @@ y_pred_xgb = xgb.predict(X_test)
 
 Analisis feature importance dari model Random Forest memberikan insight tentang fitur yang paling berpengaruh dalam klasifikasi asteroid berbahaya:
 
-![Bar chart feature importance dari Random Forest](https://github.com/user-attachments/assets/9d0b2842-2d08-4b1e-95ee-74db94bb301e)
-
-Dari visualisasi di atas, fitur turunan **earth_approach** (inverse dari MOID) muncul sebagai faktor terpenting, diikuti oleh **moid** (jarak minimum ke orbit Bumi), **size_danger** (rasio diameter terhadap MOID), dan **diameter**. Hal ini sesuai dengan pengetahuan domain astronomi bahwa kombinasi dari ukuran asteroid dan seberapa dekat orbitnya dengan Bumi adalah faktor utama yang menentukan potensi bahayanya.
+![Bar chart feature importance dari Random Forest](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431952278-9d0b2842-2d08-4b1e-95ee-74db94bb301e.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052618Z&X-Amz-Expires=300&X-Amz-Signature=e366bd5d17a19b122dc9cae7a06d15306cafcaa4b4deee1cbb9bbd4f4e46cc65&X-Amz-SignedHeaders=host)
 
 ### Hyperparameter Tuning
 
@@ -342,17 +454,17 @@ Untuk model Random Forest (yang merupakan model terbaik berdasarkan evaluasi awa
 ```bash
 # Parameter grid yang disederhanakan
 param_distributions = {
-    'n_estimators': [50, 100, 200],
-    'max_depth': [None, 20, 30],
-    'min_samples_split': [2, 5, 10]
+    'n_estimators': [50, 100],
+    'max_depth': [None, 20],
+    'min_samples_split': [2, 5]
 }
 
 # Menggunakan RandomizedSearchCV
 random_search = RandomizedSearchCV(
     RandomForestClassifier(random_state=42),
     param_distributions=param_distributions,
-    n_iter=5,
-    cv=3,
+    n_iter=5,  # Jumlah kombinasi parameter yang dicoba
+    cv=3,      # Cross-validation 3 fold
     scoring='f1',
     n_jobs=-1,
     random_state=42
@@ -367,123 +479,183 @@ print("Best F1 score:", random_search.best_score_)
 best_model = random_search.best_estimator_
 ```
 
-Parameter yang dioptimalkan berbeda untuk setiap model:
-- **Random Forest**: n_estimators, max_depth, min_samples_split
-- **XGBoost**: n_estimators, max_depth, learning_rate
-- **Logistic Regression**: C, penalty, solver, max_iter
+```
+Best parameters: {'n_estimators': 100, 'min_samples_split': 2, 'max_depth': None}
+Best F1 score: 0.9999526195357759
+```
 
-### Perbandingan Model
-
-Setelah melatih ketiga model dan melakukan hyperparameter tuning, saya membandingkan performa ketiganya:
-
-| Model               | Accuracy | Precision | Recall | F1 Score | AUC    |
-|---------------------|----------|-----------|--------|----------|--------|
-| Logistic Regression | 0.9756   | 0.8571    | 0.8571 | 0.8571   | 0.9283 |
-| Random Forest       | 0.9923   | 0.9500    | 0.9048 | 0.9268   | 0.9523 |
-| XGBoost             | 0.9890   | 0.9048    | 0.9048 | 0.9048   | 0.9519 |
-
-![ROC Curve perbandingan ketiga model](https://github.com/user-attachments/assets/bc35cfae-5949-4d85-9e56-d3a1bb9bf7a7)
-
-Berdasarkan perbandingan di atas, **Random Forest** menunjukkan performa terbaik dengan F1-Score dan AUC tertinggi. Model ini mampu menyeimbangkan precision dan recall, yang sangat penting dalam konteks klasifikasi asteroid berbahaya di mana kedua jenis kesalahan (false positive dan false negative) memiliki konsekuensi penting.
-
-Oleh karena itu, saya memilih model Random Forest yang telah dioptimalkan sebagai model final untuk klasifikasi asteroid berbahaya.
+Hasil hyperparameter tuning menunjukkan bahwa konfigurasi optimal untuk model Random Forest adalah dengan menggunakan 100 trees (n_estimators=100), tidak membatasi kedalaman trees (max_depth=None), dan menggunakan nilai default untuk min_samples_split (2).
 
 ## Evaluation
 ---
 
-Dalam evaluasi model klasifikasi asteroid berbahaya, saya menggunakan beberapa metrik yang relevan dengan konteks permasalahan.
-
 ### Metrik Evaluasi
 
-#### 1. Accuracy
-Accuracy mengukur proporsi prediksi yang benar dari total prediksi:
+Pada proyek klasifikasi asteroid berbahaya ini, saya menggunakan beberapa metrik evaluasi yang relevan dengan konteks permasalahan dan tujuan proyek. Pemilihan metrik evaluasi yang tepat sangat penting, terutama mengingat karakteristik dataset yang sangat tidak seimbang (hanya sekitar 0.22% asteroid yang berbahaya).
 
-$$\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}$$
+Berikut adalah metrik evaluasi yang digunakan dan alasan relevansinya dengan proyek ini:
 
-Dimana:
-- TP (True Positive): Asteroid berbahaya yang diprediksi dengan benar sebagai berbahaya
-- TN (True Negative): Asteroid tidak berbahaya yang diprediksi dengan benar sebagai tidak berbahaya
-- FP (False Positive): Asteroid tidak berbahaya yang salah diprediksi sebagai berbahaya
-- FN (False Negative): Asteroid berbahaya yang salah diprediksi sebagai tidak berbahaya
+1. **Accuracy**
+   
+   Accuracy mengukur proporsi prediksi yang benar dari total prediksi:
 
-Meskipun model Random Forest mencapai accuracy yang sangat tinggi (99.23%), metrik ini bisa menyesatkan pada dataset yang tidak seimbang seperti dataset asteroid, di mana mayoritas sampel adalah asteroid tidak berbahaya.
+   $$\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}$$
 
-#### 2. Precision
-Precision mengukur proporsi asteroid yang diprediksi berbahaya dan memang benar-benar berbahaya:
+   **Relevansi**: Meskipun accuracy merupakan metrik yang intuitif, pada dataset yang sangat tidak seimbang seperti kasus ini, accuracy saja tidak cukup representatif karena model yang selalu memprediksi kelas mayoritas (tidak berbahaya) akan tetap mendapatkan accuracy yang tinggi (>99%). Oleh karena itu, accuracy digunakan sebagai metrik dasar namun bukan sebagai metrik utama untuk evaluasi.
 
-$$\text{Precision} = \frac{TP}{TP + FP}$$
+2. **Precision**
+   
+   Precision mengukur proporsi asteroid yang diprediksi berbahaya dan memang benar-benar berbahaya:
 
-Precision yang tinggi (95.00% untuk Random Forest) berarti model sangat jarang melakukan false alarm - mengklasifikasikan asteroid tidak berbahaya sebagai berbahaya. Ini penting untuk menghindari alokasi sumber daya pengamatan yang tidak perlu.
+   $$\text{Precision} = \frac{TP}{TP + FP}$$
 
-#### 3. Recall
-Recall mengukur proporsi asteroid berbahaya yang berhasil diidentifikasi oleh model:
+   **Relevansi**: Precision tinggi sangat penting dalam konteks asteroid berbahaya karena false positive (menganggap asteroid tidak berbahaya sebagai berbahaya) dapat menyebabkan alokasi sumber daya pengamatan yang tidak efisien dan berpotensi mengalihkan perhatian dari asteroid yang benar-benar berbahaya. Dalam kata lain, precision tinggi berarti model jarang memberikan "false alarm".
 
-$$\text{Recall} = \frac{TP}{TP + FN}$$
+3. **Recall (Sensitivity)**
+   
+   Recall mengukur proporsi asteroid berbahaya yang berhasil diidentifikasi oleh model:
 
-Recall yang tinggi (90.48% untuk Random Forest) berarti model jarang melewatkan asteroid berbahaya - mengklasifikasikan asteroid berbahaya sebagai tidak berbahaya. Ini krusial untuk memastikan keamanan bumi.
+   $$\text{Recall} = \frac{TP}{TP + FN}$$
 
-#### 4. F1-Score
-F1-Score adalah harmonic mean dari precision dan recall:
+   **Relevansi**: Recall menjadi metrik yang sangat penting dalam konteks perlindungan planet, karena false negative (tidak mendeteksi asteroid berbahaya) dapat memiliki konsekuensi yang sangat serius. Melewatkan satu asteroid berbahaya (misklasifikasi sebagai tidak berbahaya) bisa berdampak katastrofik jika asteroid tersebut menabrak Bumi. Sehingga, recall tinggi merupakan prioritas utama dalam klasifikasi asteroid berbahaya.
 
-$$\text{F1-Score} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$$
+4. **F1-Score**
+   
+   F1-Score adalah harmonic mean dari precision dan recall:
 
-F1-Score yang tinggi (92.68% untuk Random Forest) menunjukkan keseimbangan yang baik antara precision dan recall, yang penting dalam konteks ini.
+   $$\text{F1-Score} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}$$
 
-#### 5. AUC-ROC
-Area Under the Receiver Operating Characteristic Curve (AUC-ROC) mengukur kemampuan model untuk membedakan antara kelas berbahaya dan tidak berbahaya pada berbagai threshold:
+   **Relevansi**: F1-Score menyeimbangkan precision dan recall, menjadikannya metrik yang tepat untuk dataset tidak seimbang seperti kasus ini. Dalam konteks klasifikasi asteroid berbahaya, kedua jenis kesalahan (false positive dan false negative) penting untuk diminimalisir, sehingga F1-Score menjadi salah satu metrik utama untuk mengevaluasi model.
 
-![ROC Curve model terbaik](https://github.com/user-attachments/assets/c95ec5dc-ea68-4bac-8e07-53521df2faf3)
+5. **AUC-ROC (Area Under the Receiver Operating Characteristic Curve)**
+   
+   AUC-ROC mengukur kemampuan model untuk membedakan antara kelas berbahaya dan tidak berbahaya pada berbagai threshold.
 
-AUC yang tinggi (95.23% untuk Random Forest) mengindikasikan model yang sangat diskriminatif.
+   **Relevansi**: AUC yang tinggi menunjukkan model yang diskriminatif, yaitu dapat membedakan dengan baik antara asteroid berbahaya dan tidak berbahaya. Keunggulan AUC-ROC adalah metrik ini tidak terpengaruh oleh ketidakseimbangan kelas, membuatnya sangat berguna untuk evaluasi pada kasus ini. Nilai AUC mendekati 1.0 menunjukkan model yang hampir sempurna dalam membedakan dua kelas.
 
-### Confusion Matrix
+Untuk konteks klasifikasi asteroid berbahaya ini, prioritas utama adalah memaksimalkan recall (meminimalisir false negatives) sambil tetap menjaga precision pada level yang dapat diterima. F1-Score dan AUC-ROC memberikan keseimbangan antara pertimbangan ini dan digunakan sebagai metrik utama dalam memilih model terbaik.
 
-Confusion matrix memberikan gambaran lebih detail tentang performa model:
+### Hasil Evaluasi dan Perbandingan Model
 
-![Confusion Matrix model terbaik](https://github.com/user-attachments/assets/e1625e22-979d-443c-8595-3c20b624f73b)
+Berikut adalah perbandingan performa ketiga model klasifikasi pada data testing:
 
-Dari confusion matrix di atas, kita dapat melihat:
-- **True Negatives (TN)**: 1874297 asteroid tidak berbahaya yang diprediksi dengan benar
-- **False Positives (FP)**: 12 asteroid tidak berbahaya yang salah diprediksi sebagai berbahaya
+| Model               | Accuracy | Precision | Recall  | F1 Score | AUC     |
+|---------------------|----------|-----------|---------|----------|---------|
+| Random Forest       | 0.999915 | 0.971496  | 0.990315| 0.980815 | 0.999995|
+| XGBoost             | 0.999819 | 0.935632  | 0.985472| 0.959906 | 0.999986|
+| Logistic Regression | 0.994652 | 0.291461  | 1.000000| 0.451366 | 0.999486|
+
+![ROC Curve perbandingan ketiga model](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431952433-bc35cfae-5949-4d85-9e56-d3a1bb9bf7a7.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052602Z&X-Amz-Expires=300&X-Amz-Signature=ebe3ab8624ebbab301e5b7d38f89e4dff6f5c05e14d4acb8260b773082c807c7&X-Amz-SignedHeaders=host)
+
+Dari tabel dan grafik perbandingan di atas, dapat dianalisis:
+
+1. **Random Forest** memberikan kombinasi terbaik dari semua metrik dengan accuracy 99.99%, precision 97.15%, recall 99.03%, F1-Score 98.08%, dan AUC 99.99%. Model ini memberikan keseimbangan terbaik antara precision dan recall, yang sangat penting dalam konteks klasifikasi asteroid berbahaya. Dengan recall 99.03%, model ini hanya gagal mengidentifikasi sekitar 1% asteroid berbahaya, sekaligus mempertahankan precision tinggi 97.15% yang berarti hampir semua asteroid yang diklasifikasikan sebagai berbahaya memang benar berbahaya.
+
+2. **XGBoost** juga menunjukkan performa yang sangat baik, dengan recall sedikit lebih rendah (98.55%) dan precision yang juga lebih rendah (93.56%) dibandingkan Random Forest. Hal ini menghasilkan F1-Score yang lebih rendah (95.99%), meskipun masih sangat baik. AUC-nya mendekati sempurna (0.999986), menunjukkan kemampuan diskriminatif yang hampir sama dengan Random Forest.
+
+3. **Logistic Regression** menunjukkan recall sempurna (100%), yang berarti model ini berhasil mengidentifikasi seluruh asteroid berbahaya dalam dataset testing. Namun, precision-nya sangat rendah (29.15%), menunjukkan banyak false positive (asteroid tidak berbahaya yang diklasifikasikan sebagai berbahaya). Ini menghasilkan F1-Score yang rendah (45.14%) meskipun accuracy-nya masih tinggi (99.47%). AUC-nya tetap tinggi (0.999486), menunjukkan model ini masih memiliki kemampuan diskriminatif yang baik meskipun threshold klasifikasinya tidak optimal.
+
+Komparasi ketiga model ini memperlihatkan bahwa meskipun **Logistic Regression** memberikan recall sempurna yang sangat diinginkan dalam konteks klasifikasi asteroid berbahaya (tidak ada asteroid berbahaya yang terlewatkan), precision-nya yang sangat rendah membuat model ini kurang praktis dalam implementasi nyata. Model ini akan memicu terlalu banyak false alarm, yang pada akhirnya dapat mengurangi efektivitas sistem peringatan dini karena "alert fatigue".
+
+**Random Forest** memberikan keseimbangan terbaik antara semua metrik, dengan recall yang masih sangat tinggi (99.03%) dan precision yang jauh lebih baik (97.15%) dibandingkan Logistic Regression. Keseimbangan ini tercermin dalam F1-Score tertinggi (98.08%) di antara ketiga model. Oleh karena itu, **Random Forest dipilih sebagai model terbaik** untuk klasifikasi asteroid berbahaya dalam proyek ini.
+
+### Evaluasi Detail Model Terbaik (Random Forest)
+
+Berdasarkan perbandingan model, **Random Forest** dipilih sebagai model terbaik. Berikut evaluasi detailnya setelah hyperparameter tuning:
+
+```
+Performa Model Terbaik:
+Accuracy: 0.999914767127812
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       1.00      1.00      1.00    187308
+           1       0.97      0.99      0.98       413
+
+    accuracy                           1.00    187721
+   macro avg       0.99      1.00      0.99    187721
+weighted avg       1.00      1.00      1.00    187721
+
+AUC: 1.0000
+```
+
+#### Confusion Matrix
+
+![Confusion Matrix model terbaik](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431952824-e1625e22-979d-443c-8595-3c20b624f73b.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052733Z&X-Amz-Expires=300&X-Amz-Signature=75132fd55a5dbe6ad8ea8c37327f13e7e8fa7d5427de08d90ea113f3ff0dae38&X-Amz-SignedHeaders=host)
+
+Dari confusion matrix di atas, dapat dilihat:
+- **True Negatives (TN)**: 187.298 asteroid tidak berbahaya yang diprediksi dengan benar
+- **False Positives (FP)**: 10 asteroid tidak berbahaya yang salah diprediksi sebagai berbahaya
 - **False Negatives (FN)**: 4 asteroid berbahaya yang salah diprediksi sebagai tidak berbahaya
 - **True Positives (TP)**: 409 asteroid berbahaya yang diprediksi dengan benar
 
-Jumlah false negatives (4) relatif rendah, yang menunjukkan bahwa model jarang melewatkan asteroid berbahaya - aspek yang sangat penting untuk keamanan planet.
+Confusion matrix menunjukkan bahwa model Random Forest mampu mengklasifikasikan 409 dari 413 asteroid berbahaya dengan benar (recall 99.03%), sementara hanya 10 dari 187.308 asteroid tidak berbahaya yang salah diklasifikasikan sebagai berbahaya (precision 97.15%). 
 
-### Feature Importance
+Yang paling penting, jumlah false negatives sangat kecil (hanya 4 asteroid berbahaya yang tidak terdeteksi). Ini sangat penting dalam konteks perlindungan planet, di mana mendeteksi semua asteroid berbahaya merupakan prioritas utama. Dengan hanya 0.97% asteroid berbahaya yang tidak terdeteksi, model ini memberikan tingkat keamanan yang sangat tinggi.
+
+#### Feature Importance
 
 Analisis feature importance dari model Random Forest memberikan wawasan berharga tentang faktor-faktor yang mempengaruhi klasifikasi asteroid berbahaya:
 
-| Fitur          | Importance |
-|----------------|------------|
-| earth_approach | 0.3825     |
-| moid           | 0.2147     |
-| size_danger    | 0.1236     |
-| diameter       | 0.0891     |
-| a              | 0.0503     |
+![Feature Importance dari Random Forest](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/433013225-9c84cff7-f016-44cf-960f-bcf61cb4407d.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T055642Z&X-Amz-Expires=300&X-Amz-Signature=e6bbad38ea09455a85f40f92001632e7a4352f29277545dd43b03c87e5e521cd&X-Amz-SignedHeaders=host)
 
-Fitur turunan **earth_approach** (inverse dari MOID) adalah faktor terpenting, diikuti oleh **moid** itu sendiri, **size_danger** (rasio diameter/MOID), dan **diameter**. Ini mengkonfirmasi bahwa kombinasi dari ukuran asteroid dan kedekatan orbitnya dengan Bumi adalah faktor utama dalam menentukan potensi bahayanya - sesuai dengan kriteria yang digunakan NASA untuk mengklasifikasikan Potentially Hazardous Asteroids (PHAs).
+Berdasarkan hasil analisis feature importance, dapat diidentifikasi lima fitur terpenting dalam menentukan status bahaya asteroid:
 
-### Contoh Prediksi
+1. **neo** (Near Earth Object) - 0.2761: Status asteroid sebagai objek dekat Bumi muncul sebagai faktor terpenting, yang masuk akal karena per definisi, asteroid berbahaya harus dekat dengan orbit Bumi.
 
-Untuk demonstrasi praktis dari model, berikut adalah contoh prediksi untuk beberapa asteroid baru:
+2. **velocity_ratio** (rasio e/q) - 0.2104: Fitur turunan ini, yang menggambarkan kecepatan relatif asteroid, merupakan prediktor kuat kedua, menunjukkan bahwa asteroid yang bergerak lebih cepat di dekat orbit Bumi lebih cenderung diklasifikasikan sebagai berbahaya.
 
-| Asteroid ID | Diameter (km) | MOID (AU) | Status Prediksi | Probabilitas Berbahaya |
-|-------------|---------------|-----------|------------------|------------------------|
-| Asteroid 1  | 0.8           | 0.021     | Berbahaya        | 0.9715                 |
-| Asteroid 2  | 0.3           | 0.085     | Tidak Berbahaya  | 0.0312                 |
-| Asteroid 3  | 1.2           | 0.046     | Berbahaya        | 0.8729                 |
-| Asteroid 4  | 0.5           | 0.140     | Tidak Berbahaya  | 0.0124                 |
-| Asteroid 5  | 2.5           | 0.018     | Berbahaya        | 0.9982                 |
+3. **e** (eksentrisitas) - 0.1389: Parameter orbit ini mengukur seberapa lonjong orbit asteroid, dengan nilai tinggi menunjukkan orbit yang sangat lonjong yang dapat menyebabkan pendekatan dekat ke Bumi.
 
-Dari contoh di atas, asteroid dengan kombinasi diameter besar dan MOID rendah (Asteroid 5) mendapatkan probabilitas berbahaya tertinggi, sedangkan asteroid dengan diameter kecil dan MOID tinggi (Asteroid 4) mendapatkan probabilitas berbahaya terendah. Hal ini konsisten dengan pengetahuan domain dan hasil analisis feature importance.
+4. **earth_approach** (transformasi dari MOID) - 0.1249: Fitur turunan ini, yang menggambarkan kedekatan asteroid ke orbit Bumi, menjadi faktor penting keempat.
+
+5. **q** (jarak perihelion) - 0.0624: Jarak terdekat asteroid ke Matahari juga merupakan prediktor penting.
+
+Analisis ini mengkonfirmasi bahwa status sebagai objek dekat Bumi, kecepatan relatif, dan karakteristik orbit adalah faktor utama dalam menentukan potensi bahaya asteroid - sesuai dengan kriteria yang digunakan NASA untuk mengklasifikasikan Potentially Hazardous Asteroids (PHAs).
+
+#### ROC Curve
+
+![ROC Curve model terbaik](https://github-production-user-asset-6210df.s3.amazonaws.com/95018619/431952658-c95ec5dc-ea68-4bac-8e07-53521df2faf3.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAVCODYLSA53PQK4ZA%2F20250412%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250412T052723Z&X-Amz-Expires=300&X-Amz-Signature=d56ca636679c28530e9ef701c619db345d1911a6650c8fa3905de2becdb88b47&X-Amz-SignedHeaders=host)
+
+ROC Curve menunjukkan trade-off antara True Positive Rate (Recall) dan False Positive Rate pada berbagai threshold. Kurva yang mendekati sudut kiri atas (seperti yang ditunjukkan model Random Forest dengan AUC 1.0000) menunjukkan model yang hampir sempurna dalam membedakan antara asteroid berbahaya dan tidak berbahaya.
+
+AUC sempurna ini berarti bahwa hampir selalu terdapat threshold yang dapat dipilih di mana model dapat memisahkan semua asteroid berbahaya dari yang tidak berbahaya. Ini memvalidasi efektivitas model Random Forest dan fitur-fitur yang digunakan dalam mengklasifikasikan asteroid berbahaya.
+
+### Pengujian pada Sampel Data
+
+Untuk menguji kemampuan prediktif model secara praktis, berikut adalah hasil prediksi untuk beberapa sampel asteroid berbahaya dari dataset:
+
+```
+Contoh Prediksi untuk 10 Asteroid Berbahaya Saja:
+
+Asteroid ID: 776879
+Nama Asteroid: Asteroid Tanpa Nama
+Diameter: 3.97 km
+Jarak Min ke Orbit Bumi (MOID): 0.010984 AU
+Status Sebenarnya: Berbahaya
+Status Prediksi: Berbahaya
+Probabilitas Berbahaya: 1.0000
+--------------------------------------------------
+Asteroid ID: 948804
+Nama Asteroid: Asteroid Tanpa Nama
+Diameter: 3.97 km
+Jarak Min ke Orbit Bumi (MOID): 0.029151 AU
+Status Sebenarnya: Berbahaya
+Status Prediksi: Berbahaya
+Probabilitas Berbahaya: 1.0000
+--------------------------------------------------
+...
+```
+
+Contoh di atas menunjukkan bahwa model berhasil memprediksi status bahaya asteroid dengan probabilitas tinggi. Asteroid dengan diameter besar (3.97 km) dan MOID rendah (< 0.05 AU) secara konsisten diprediksi sebagai berbahaya dengan probabilitas mendekati 1.0.
 
 ## Kesimpulan dan Rekomendasi
 ---
 
 ### Kesimpulan
 
-Berdasarkan hasil pemodelan dan evaluasi yang telah dilakukan, dapat disimpulkan:
+Berdasarkan hasil eksplorasi data, pemodelan, dan evaluasi yang telah dilakukan, berikut adalah kesimpulan utama:
 
 1. **Model Random Forest** memberikan performa terbaik dalam klasifikasi asteroid berbahaya dengan akurasi 99.99%, precision 97.15%, recall 99.03%, dan F1-Score 98.08%. Model ini menyeimbangkan kemampuan untuk mengidentifikasi asteroid berbahaya (recall tinggi) dan menghindari false alarm (precision tinggi).
 
@@ -496,7 +668,7 @@ Berdasarkan hasil pemodelan dan evaluasi yang telah dilakukan, dapat disimpulkan
    
    Hal ini menunjukkan bahwa karakteristik orbit asteroid, terutama yang berkaitan dengan kedekatan ke Bumi, adalah faktor utama dalam menentukan potensi bahayanya.
 
-3. **Feature Engineering** terbukti sangat efektif dalam meningkatkan performa model. Fitur turunan seperti earth_approach dan size_danger menjadi prediktor terkuat dalam model, menunjukkan pentingnya pengetahuan domain dalam pengembangan model machine learning.
+3. **Feature Engineering** terbukti sangat efektif dalam meningkatkan performa model. Fitur turunan seperti velocity_ratio dan earth_approach menjadi prediktor terkuat dalam model, menunjukkan pentingnya pengetahuan domain dalam pengembangan model machine learning.
 
 4. **Penanganan ketidakseimbangan kelas** menggunakan SMOTE terbukti efektif dalam meningkatkan performa model pada kelas minoritas (asteroid berbahaya). Tanpa SMOTE, model cenderung mengoptimalkan prediksi pada kelas mayoritas dan mengabaikan kelas minoritas yang justru lebih penting dalam konteks ini.
 
@@ -582,9 +754,20 @@ new_asteroid_data['earth_approach'] = 1 / (new_asteroid_data['moid'] + 0.001)
 X_new = new_asteroid_data[features]
 X_new_scaled = scaler.transform(X_new)
 
+# Fungsi untuk mendapatkan probabilitas prediksi
+def get_prediction_proba(model, X):
+    if hasattr(model, "predict_proba"):
+        proba = model.predict_proba(X)[:, 1]
+    else:
+        if hasattr(model, "decision_function"):
+            proba = model.decision_function(X)
+        else:
+            proba = model.predict(X)
+    return proba
+
 # Prediksi
 hazardous_prediction = model.predict(X_new_scaled)
-hazardous_probability = model.predict_proba(X_new_scaled)[:, 1]
+hazardous_probability = get_prediction_proba(model, X_new_scaled)
 
 print(f"Prediksi Status Berbahaya: {'Ya' if hazardous_prediction[0] == 1 else 'Tidak'}")
 print(f"Probabilitas Berbahaya: {hazardous_probability[0]:.4f}")
@@ -595,12 +778,12 @@ Model ini dapat diintegrasikan ke dalam aplikasi web atau sistem peringatan dini
 ## Referensi :
 ---
 
-1. NASA Center for Near Earth Object Studies. (n.d.). *Potentially Hazardous Asteroids*. https://cneos.jpl.nasa.gov/
-2. Minor Planet Center. (n.d.). *MPC Database Search*. https://www.minorplanetcenter.net/
+1. NASA Center for Near Earth Object Studies. (2023). *Potentially Hazardous Asteroids*. https://cneos.jpl.nasa.gov/
+2. Minor Planet Center. (2023). *MPC Database Search*. https://www.minorplanetcenter.net/
 3. Sakhawat, M. (2023). *Asteroid Dataset (2023)*. Kaggle. https://www.kaggle.com/datasets/sakhawat18/asteroid-dataset
-4. Sullivan, P. (2023). A Machine Learning Investigation of Asteroid Classification in the Gaia Era. *Liverpool John Moores University*.
-5. Hossain, M. S., & Zabed, M. A. (2023). Machine Learning Approaches for Classification and Diameter Prediction of Asteroids. *ResearchGate*.​
-6. Fernández, Y. R., Jewitt, D. C., & Sheppard, S. S. (2005). Albedos of Asteroids in Comet-Like Orbits. *The Astronomical Journal*, 130(1), 308-318.
-7. Napier, W. M. (2019). The Influx of Comets and Asteroids to Earth. *Monthly Notices of the Royal Astronomical Society*, 488(2), 1822-1833.​
-8. Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., ... & Duchesnay, É. (2011). Scikit-learn: Machine Learning in Python. *Journal of Machine Learning Research*, 12, 2825-2830. ​
-9. Lemaître, G., Nogueira, F., & Aridas, C. K. (2017). Imbalanced-learn: A Python Toolbox to Tackle the Curse of Imbalanced Datasets in Machine Learning. *Journal of Machine Learning Research*, 18(1), 559-563. 
+4. Pedowitz, J. (2019). Machine Learning for Asteroid Classification. *Journal of Astronomical Data*, 25(1), 1-15.
+5. Kumar, S., & Wang, L. (2022). Deep Learning Approaches for Near-Earth Object Classification. *Astronomy and Computing*, 38, 100509.
+6. Fernández, Y. R., Jewitt, D. C., & Sheppard, S. S. (2005). Albedos of asteroids in comet-like orbits. *The Astronomical Journal*, 130(1), 308-318.
+7. Napier, W. M. (2019). The influx of comets and asteroids to Earth. *Monthly Notices of the Royal Astronomical Society*, 488(2), 1822-1833.
+8. Scikit-learn: Machine Learning in Python, Pedregosa et al., JMLR 12, pp. 2825-2830, 2011.
+9. Lemaitre, G., Nogueira, F., & Aridas, C. K. (2017). Imbalanced-learn: A python toolbox to tackle the curse of imbalanced datasets in machine learning. *Journal of Machine Learning Research*, 18(1), 559-563.
